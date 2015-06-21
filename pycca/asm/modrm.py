@@ -3,7 +3,7 @@
 import sys
 
 from .register import Register
-from .pointer import Pointer, mod_reg_rm
+from .pointer import Pointer, mod_reg_rm, rex
 from .util import long
 from .code import Code
 
@@ -42,7 +42,7 @@ class ModRmSib(object):
             rex_byt, self.code = mod_reg_rm('dir', a, b)
             if self.argtypes != 'xr' and a.rex:
                 self.rex |= rex.r
-            if b.rex: 
+            if b.rex:
                 self.rex |= rex.b
         elif self.argtypes == 'mr':
             rex_byt, self.code = a.modrm_sib(b)
