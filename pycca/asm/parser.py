@@ -75,6 +75,8 @@ def parse_asm(asm, namespace=None):
         
         mnem, ops = m.groups()
         mnem = mnem.strip()
+        if mnem == "int":
+            mnem = "int_"
         
         # Get instruction class
         try:

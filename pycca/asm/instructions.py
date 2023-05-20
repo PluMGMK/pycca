@@ -1716,6 +1716,15 @@ class int_(Instruction):
     def __init__(self, code):  # set method signature
         Instruction.__init__(self, code)
 
+    def generate_code(self):
+        # Always produce a single-byte instruction for int3 / int1
+        if self.args[0] == 3:
+            self._code = b'\xcc'
+        elif self.args[0] == 1:
+            self._code = b'\xf1'
+        else:
+            Instruction.generate_code(self)
+
 
 class syscall(Instruction):
     """SYSCALL invokes an OS system-call handler at privilege level 0. It does
