@@ -126,8 +126,8 @@ class WinPage(object):
     def __init__(self, size):
         kern = ctypes.windll.kernel32
         valloc = kern.VirtualAlloc
-        valloc.argtypes = (ctypes.c_uint32,) * 4
-        valloc.restype = ctypes.c_uint32
+        valloc.argtypes = (ctypes.c_voidp,ctypes.c_size_t) + (ctypes.c_uint32,) * 2
+        valloc.restype = ctypes.c_voidp
         MEM_COMMIT = 0x1000
         MEM_RESERVE = 0x2000
         PAGE_EXECUTE_READWRITE = 0x40
@@ -146,7 +146,7 @@ class WinPage(object):
     def __del__(self):
         kern = ctypes.windll.kernel32
         vfree = kern.VirtualFree
-        vfree.argtypes = (ctypes.c_uint32,) * 3
+        vfree.argtypes = (ctypes.c_voidp,ctypes.c_size_t,ctypes.c_uint32)
         MEM_RELEASE = 0x8000
         vfree(self.addr, self.size, MEM_RELEASE)
     
