@@ -346,7 +346,7 @@ class sub(Instruction):
         
         (('r/m16', 'imm8'),  ['83 /5', 'mi', True, True]),
         (('r/m32', 'imm8'),  ['83 /5', 'mi', True, True]),
-        (('r/m64', 'imm8'),  ['REX.W + 85 /0', 'mi', True, False]),        
+        (('r/m64', 'imm8'),  ['REX.W + 83 /5', 'mi', True, False]),        
         
         (('r/m8', 'r8'),   ['28 /r', 'mr', True, True]),
         (('r/m16', 'r16'), ['29 /r', 'mr', True, True]),
@@ -357,6 +357,59 @@ class sub(Instruction):
         (('r16', 'r/m16'),   ['2b /r', 'rm', True, True]),
         (('r32', 'r/m32'),   ['2b /r', 'rm', True, True]),
         (('r64', 'r/m64'),   ['REX.W + 2b /r', 'rm', True, False]),
+    ])
+
+    operand_enc = {
+        'mi': ['ModRM:r/m (r,w)', 'imm8/16/32'],
+        'mr': ['ModRM:r/m (r,w)', 'ModRM:reg (r)'],
+        'rm': ['ModRM:reg (r,w)', 'ModRM:r/m (r)'],
+    }
+
+    def __init__(self, dst, src):  # set method signature
+        Instruction.__init__(self, dst, src)
+
+
+class xor(Instruction):
+    """Performs a bitwise exclusive OR (XOR) operation on the destination
+    (first) and source (second) operands and stores the result in the
+    destination operand location.
+
+    The source operand can be an immediate, a register, or a memory location;
+    the destination operand can be a register or a memory location. (However,
+    two memory operands cannot be used in one instruction.) Each bit of the
+    result is 1 if the corresponding bits of the operands are different;
+    each bit is 0 if the corresponding bits are the same.
+    
+    ====== =============== ====== ====== ======================================
+    dst    src             32-bit 64-bit description
+    ====== =============== ====== ====== ======================================
+    r/m8   r/m8, imm8       X      X     dst -= src
+    r/m16  r/m16, imm8/16   X      X     
+    r/m32  r/m32, imm8/32   X      X     
+    r/m64  r/m64, imm8/64          X
+    ====== =============== ====== ====== ======================================
+    """    
+    name = 'sub'
+    
+    modes = collections.OrderedDict([
+        (('r/m8', 'imm8'),   ['80 /6', 'mi', True, True]),
+        (('r/m16', 'imm16'), ['81 /6', 'mi', True, True]),
+        (('r/m32', 'imm32'), ['81 /6', 'mi', True, True]),
+        (('r/m64', 'imm32'), ['REX.W + 81 /6', 'mi', True, False]),
+        
+        (('r/m16', 'imm8'),  ['83 /6', 'mi', True, True]),
+        (('r/m32', 'imm8'),  ['83 /6', 'mi', True, True]),
+        (('r/m64', 'imm8'),  ['REX.W + 83 /6', 'mi', True, False]),        
+        
+        (('r/m8', 'r8'),   ['30 /r', 'mr', True, True]),
+        (('r/m16', 'r16'), ['31 /r', 'mr', True, True]),
+        (('r/m32', 'r32'), ['31 /r', 'mr', True, True]),
+        (('r/m64', 'r64'), ['REX.W + 31 /r', 'mr', True, False]),
+        
+        (('r8', 'r/m8'),   ['32 /r', 'rm', True, True]),
+        (('r16', 'r/m16'),   ['33 /r', 'rm', True, True]),
+        (('r32', 'r/m32'),   ['33 /r', 'rm', True, True]),
+        (('r64', 'r/m64'),   ['REX.W + 33 /r', 'rm', True, False]),
     ])
 
     operand_enc = {
@@ -1438,7 +1491,7 @@ class divsd(Instruction):
 # Need:
 # fchs, fxch
 # fsin, fcos, fptan, fpatan, fcom, 
-# mul, or, and, andn, not, xor
+# mul, or, and, andn, not
 
 # avx/sse2 instructions
 # addsd, subsd, mulsd, divsd, ...
