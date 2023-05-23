@@ -124,7 +124,34 @@ print("""
 #  below for an example of calling an external function)
 msg = ctypes.create_string_buffer(b"Howdy.\n")
 if sys.platform == 'win32':
-    print("[ not implemented on win32 ]")
+    pwritefile = ctypes.windll.kernel32.WriteFile
+    import msvcrt, io
+    try:
+        stdout_fhdl = msvcrt.get_osfhandle(sys.stdout.fileno())
+    except io.UnsupportedOperation:
+        stdout_fhdl = 0
+    if ARCH == 32:
+        print("[ not implemented on win32 ]")
+    elif not stdout_fhdl:
+        print("[ not implemented when stdout is not a file ]")
+    else:
+        prnt = [
+            mov(rax, ctypes.addressof(pwritefile)),
+            mov(rcx, stdout_fhdl),
+            mov(rdx, ctypes.addressof(msg)),
+            mov(r8d, len(msg)-1),
+            xor(r9d, r9d),   # NULL lpBytesWritten
+            push(r9),        # NULL lpOverlapped
+            sub(rsp, 0x20),  # shadow stack space
+            call(qword(rax)),# call WriteFile indirectly
+            add(rsp,0x28),   # restore stack pointer
+            ret()
+        ]
+        fn = mkfunction(prnt)
+        fn.restype = ctypes.c_bool
+        
+        # print!
+        fn()
 else:
     if ARCH == 32:
         prnt = [  # write to stdout on 32-bit linux
@@ -331,27 +358,27 @@ else:
     addr = data.buffer_info()[0]
 
 # Find first element >= 0 using asm
-start = time.clock()
+start = time.process_time()
 ind1 = find_first(addr, len(data))
-duration1 = time.clock() - start
+duration1 = time.process_time() - start
     
 if HAVE_NUMPY:
     # Find the first element >= 0 using numpy
-    start = time.clock()
+    start = time.process_time()
     ind2 = np.argwhere(data >= 0)[0,0]
-    duration2 = time.clock() - start
+    duration2 = time.process_time() - start
     assert ind1 == ind2
     print("First >= 0: %d" % ind1)
     print("ASM version took %0.2fms" % (duration1*1000)) 
     print("NumPy version took %0.2fms" % (duration2*1000)) 
 else:    
     # Find the first element >= 0 using python 
-    start = time.clock()
+    start = time.process_time()
     for i in range(len(data)):
         if data[i] >= 0:
             break
     ind2 = i
-    duration2 = time.clock() - start
+    duration2 = time.process_time() - start
     assert ind1 == ind2
     print("First >= 0: %d" % ind1)
     print("ASM version took %0.2fms" % (duration1*1000)) 
